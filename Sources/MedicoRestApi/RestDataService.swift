@@ -25,6 +25,10 @@ private extension RestDataService {
     }
 
     func getURL(from path: String, query: String, parameters: [String: String]?) -> URL? {
+        guard let query = query.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+            return nil
+        }
+
         if let parameters = parameters {
             let parametersString = getParametersString(parameters: parameters)
             
@@ -38,9 +42,13 @@ private extension RestDataService {
         return URL(string: "\(path)\(query)")
     }
 
-    func getParametersString(parameters: [String: String]) -> String{
+    func getParametersString(parameters: [String: String]) -> String {
         let parametersString = parameters.map { key, value in
-            "\(key)=\(value)"
+            guard let value = value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+                return ""
+            }
+
+            return "\(key)=\(value)"
         }.joined(separator: "&")
 
         return parametersString

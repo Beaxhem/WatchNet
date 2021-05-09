@@ -18,6 +18,8 @@ final class TodoService: RestJSONService {
 
     var method: HTTPMethod = .get
 
+    var defaultParamenters: [String : String]?
+
 }
 
 final class MedicoRestApiTests: XCTestCase {
