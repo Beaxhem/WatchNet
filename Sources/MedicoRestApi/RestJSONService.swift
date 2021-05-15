@@ -32,13 +32,12 @@ public extension RestJSONService {
 
 }
 
-public extension RestJSONService {
+private extension RestJSONService {
 
     func decode(data: Data) -> Output? {
         do {
             return try JSONDecoder().decode(Output.self, from: data)
         } catch {
-            print(error)
             return nil
         }
 

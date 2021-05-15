@@ -32,6 +32,7 @@ public extension ImageService {
                 case .success(let data):
                     if let image = UIImage(data: data) {
                         completion(.success(image))
+                        return
                     }
 
                     completion(.failure(.badData))

@@ -8,9 +8,13 @@
 import Foundation
 
 public enum HTTPMethod: String {
-    case get = "GET"
-    case post = "POST"
-    case delete = "DELETE"
-    case put = "PUT"
-    case patch = "PATCH"
+    case get
+    case post
+    case delete
+    case put
+    case patch
+
+    var string: String {
+        self.rawValue.uppercased()
+    }
 }

@@ -24,25 +24,32 @@ private extension RestDataService {
         URLSession.shared
     }
 
-    func getURL(from path: String, query: String, parameters: [String: String]?) -> URL? {
+    func getRequest(path: String, query: String = "", parameters: [String: String]? = nil) -> URLRequest? {
+        guard let url = getURL(path: path, query: query, parameters: parameters) else {
+            return nil
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = method.string
+
+        return request
+    }
+
+    func getURL(path: String, query: String = "", parameters: [String: String]?) -> URL? {
         guard let query = query.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
             return nil
         }
 
-        if let parameters = parameters {
-            let parametersString = getParametersString(parameters: parameters)
-            
-            return URL(string: "\(path)\(query)?\(parametersString)")
-        } else if let defaultParamenters = defaultParamenters {
-            let parametersString = getParametersString(parameters: defaultParamenters)
+        let parametersString = getParametersString(parameters: parameters ?? defaultParamenters)
 
-            return URL(string: "\(path)\(query)?\(parametersString)")
-        }
-
-        return URL(string: "\(path)\(query)")
+        return URL(string: [path, query, parametersString].joined())
     }
 
-    func getParametersString(parameters: [String: String]) -> String {
+    func getParametersString(parameters: [String: String]?) -> String {
+        guard let parameters = parameters else {
+            return ""
+        }
+
         let parametersString = parameters.map { key, value in
             guard let value = value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
                 return ""
@@ -51,7 +58,7 @@ private extension RestDataService {
             return "\(key)=\(value)"
         }.joined(separator: "&")
 
-        return parametersString
+        return "?\(parametersString)"
     }
 
     func mapError(by response: URLResponse) -> NetworkError? {
@@ -82,13 +89,19 @@ public extension RestDataService {
     func execute(query: String = "", parameters: [String: String]? = nil, completion: @escaping (Result<Data, NetworkError>) -> Void) {
         let start = DispatchTime.now()
 
-        guard let path = path, let url = getURL(from: path, query: query, parameters: parameters) else {
+        guard let path = path, let reqeust = getRequest(path: path, query: query, parameters: parameters) else {
             completion(.failure(.badRequest))
             return
         }
 
-        let task = base.dataTask(with: url) { data, response, error in
+        let task = base.dataTask(with: reqeust) { data, response, error in
             print("Time taken: \((DispatchTime.now().uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000) ms")
+
+            if error != nil {
+                completion(.failure(.notFound))
+                return
+            }
+
             if let response = response, let error = mapError(by: response) {
                 completion(.failure(error))
                 return
