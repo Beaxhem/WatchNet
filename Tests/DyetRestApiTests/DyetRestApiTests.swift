@@ -1,5 +1,5 @@
 import XCTest
-@testable import MedicoRestApi
+@testable import DyetRestApi
 
 
 final class TodoService: RestJSONService {
