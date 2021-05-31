@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  RestJSONService.swift
 //  
 //
 //  Created by Ilya Senchukov on 06.05.2021.
@@ -16,6 +16,7 @@ public protocol RestJSONService: RestDataService {
 public extension RestJSONService {
 
     func execute(query: String = "", parameters: [String: String]? = nil, completion: @escaping (Result<Output, NetworkError>) -> Void) {
+        
         (self as RestDataService).execute(query: query, parameters: parameters) { res in
             switch res {
                 case .failure(let error):

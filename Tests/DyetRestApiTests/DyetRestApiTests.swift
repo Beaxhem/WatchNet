@@ -20,6 +20,8 @@ final class TodoService: RestJSONService {
 
     var defaultParamenters: [String : String]?
 
+    var cacheable = false
+
 }
 
 final class BadMethodService: RestJSONService {
@@ -39,6 +41,8 @@ final class BadMethodService: RestJSONService {
     var method: HTTPMethod = .post
 
     var defaultParamenters: [String : String]?
+
+    var cacheable = false
 
 }
 
@@ -62,6 +66,8 @@ final class CommentsService: RestJSONService {
 
     var defaultParamenters: [String : String]?
 
+    var cacheable = false
+
 }
 
 struct BadURLService:  RestJSONService {
@@ -81,6 +87,8 @@ struct BadURLService:  RestJSONService {
     var method: HTTPMethod = .get
 
     var defaultParamenters: [String : String]?
+
+    var cacheable = false
 
 }
 
@@ -192,5 +200,48 @@ final class MedicoRestApiTests: XCTestCase {
         }
 
         wait(for: [expectation], timeout: 10)
+    }
+
+    func testCache() {
+        func check(image1: UIImage, image2: UIImage) -> Bool {
+            image1.pngData() == image2.pngData()
+        }
+
+        let service = ImageService()
+
+        let expectation = XCTestExpectation()
+
+        var image: UIImage?
+
+        service.image(for: "https://via.placeholder.com/150", force: true) { res in
+            switch res {
+                case .failure(let error):
+                    print(error)
+                    XCTFail()
+                case .success(let data):
+                    image = data
+                    break
+            }
+        }
+
+        sleep(3)
+
+        service.image(for: "https://via.placeholder.com/150") { res in
+            switch res {
+                case .failure(let error):
+                    print(error)
+                    XCTFail()
+                case .success(let data):
+
+                    guard let image = image,
+                          check(image1: image, image2: data) else {
+                        return
+                    }
+                    expectation.fulfill()
+            }
+        }
+
+        wait(for: [expectation], timeout: 10)
+
     }
 }
