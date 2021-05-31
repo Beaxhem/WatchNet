@@ -9,8 +9,9 @@ import Foundation
 
 extension RestDataService {
 
-    func getRequest(path: String, query: String = "", parameters: [String: String]? = nil) -> URLRequest? {
-        guard let url = getURL(path: path, query: query, parameters: parameters) else {
+    func getRequest(query: String = "", parameters: [String: String]? = nil) -> URLRequest? {
+        guard let path = path,
+              let url = getURL(path: path, query: query, parameters: parameters) else {
             return nil
         }
 
@@ -18,6 +19,16 @@ extension RestDataService {
         request.httpMethod = method.string
 
         return request
+    }
+
+    func getPostRequest(query: String = "", parameters: [String: String]? = nil) -> URLRequest? {
+        var request = getRequest(query: query, parameters: parameters)
+
+        request?.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request?.addValue("application/json", forHTTPHeaderField: "Accept")
+
+        return request
+
     }
 
     func getURL(path: String, query: String = "", parameters: [String: String]?) -> URL? {
