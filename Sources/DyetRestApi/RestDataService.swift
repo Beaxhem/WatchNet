@@ -42,19 +42,19 @@ extension RestDataService {
 public extension RestDataService {
 
     @discardableResult
-    func execute(query: String = "", parameters: [String: String]? = nil, force: Bool = true, completion: @escaping (Result<Data, NetworkError>) -> Void) -> URLSessionDataTask {
+    func execute(query: String = "", parameters: [String: String]? = nil, force: Bool = true, completion: @escaping (Result<Data, NetworkError>) -> Void) -> URLSessionDataTask? {
 
         let start = DispatchTime.now()
 
         guard let path = path, let request = getRequest(path: path, query: query, parameters: parameters) else {
 
             completion(.failure(.badRequest))
-            return
+            return nil
         }
 
         if !force, let cachedResponse = cache.cachedResponse(for: request) {
             completion(.success(cachedResponse.data))
-            return
+            return nil
         }
 
         let task = base.dataTask(with: request) { data, response, error in
