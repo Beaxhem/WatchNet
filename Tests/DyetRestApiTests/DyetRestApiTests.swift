@@ -141,7 +141,7 @@ final class MedicoRestApiTests: XCTestCase {
     func testImageExample() {
         let expectation = XCTestExpectation()
 
-        #if os(iOS) || os(watchOS) || os(tvOS)
+        #if !os(macOS)
         let service = ImageService()
 
         service.image(for: "https://via.placeholder.com/150") { res in
@@ -208,7 +208,7 @@ final class MedicoRestApiTests: XCTestCase {
     func testCache() {
         let expectation = XCTestExpectation()
 
-        #if os(iOS) || os(watchOS) || os(tvOS)
+        #if !os(macOS)
         func check(image1: UIImage, image2: UIImage) -> Bool {
             image1.pngData() == image2.pngData()
         }

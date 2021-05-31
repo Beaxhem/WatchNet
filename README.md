@@ -16,7 +16,7 @@ The idea is to get rid of using old-fashioned statically shared NetworkManager w
 
 # Requirements
 
-iOS 10.0+ / macOS 10.12+ / tvOS 10.0+ / watchOS 3.0+ (mostly)
+iOS 10.0+ / macOS 10.12+ / tvOS 10.0+ / watchOS 3.0+ 
 Xcode 11+
 Swift 5.1+
 
@@ -27,7 +27,7 @@ Adding the library to your project is just easy. Simply add `https://github.com/
 or insert 
 ```
 dependencies: [
-    .package(url: "https://github.com/DyetApp/DyetRestApi", .upToNextMajor(from: "5.2.0"))
+    .package(url: "https://github.com/DyetApp/DyetRestApi", .upToNextMajor(from: "1.0.0"))
 ]
 ```
 into your `Package.swift` file.
@@ -71,8 +71,6 @@ service.execute { res in
 ```
 
 ### Builtin service for fetching images and caching them
-
-**Note that this feature cannot be used on Macs.**
 
 ```
 import AMS
