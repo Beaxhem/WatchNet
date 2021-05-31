@@ -1,6 +1,6 @@
 # DyetRestApi
 
-DyetRestApi is a modern http networking library.
+DyetRestApi is a http networking library.
 
 * [Concept](#Concept)
 * [Requirements](#Requirements)
@@ -12,7 +12,7 @@ DyetRestApi is a modern http networking library.
 
 # Concept
 
-The idea is to get rid of using old-fashioned statically shared NetworkManager with lots of requests in it. Instead just  create a little service with some parameters in it. This can result in a great scaleability and easy-to-read code.
+The idea was to replace an old-fashioned approach of managing network requests in apps. Usually, people use something like a singleton with a lot of functions in it. It makes code not scalable and hard to maintain. So, I wanted to change it. Instead of creating one structure, you create services to manage each type of requests as you want. 
 
 # Requirements
 
