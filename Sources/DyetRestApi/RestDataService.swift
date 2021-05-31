@@ -57,7 +57,6 @@ public extension RestDataService {
     ) {
 
         guard var request = getPostRequest(query: query, parameters: parameters) else {
-
             completion(.failure(.badRequest))
             return
         }
@@ -86,6 +85,7 @@ private extension RestDataService {
 
         if !force, let cachedResponse = cache.cachedResponse(for: request) {
             completion(.success(cachedResponse.data))
+            log(success: true, message: "from cache")
             return
         }
 
@@ -104,6 +104,7 @@ private extension RestDataService {
             }
 
             guard let data = data else {
+                completion(.failure(.badData))
                 return
             }
 
