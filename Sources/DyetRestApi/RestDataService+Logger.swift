@@ -12,15 +12,31 @@ public extension RestDataService {
     func log(response: URLResponse, startTime: DispatchTime? = nil) {
         #if DEBUG
 
-        let icon = getIcon(by: response)
-        let date = Date()
+        let success = mapError(by: response) == nil
+
         let timeTaken = getTimeTaken(startTime: startTime)
-        let method = method.string
-        let path = path ?? ""
         let statusCode = (response as! HTTPURLResponse).statusCode
+        let message = "\(statusCode) \(timeTaken)"
+
+        log(success: success, message: message, separator: " ")
+
+        #endif
+    }
+
+    func log(success: Bool, message: String? = nil, separator: String = ", ") {
+        #if DEBUG
+
+        let icon = getIconIf(success: success)
+        let date = Date()
+        let method = method.string
+        let path = path ?? "empty_path"
+        var _message = ""
+        if let message = message {
+            _message = separator + message
+        }
 
         print(
-            "\(icon) [\(date)] \(timeTaken)- \(method) \(path) \(statusCode)"
+            "\(icon) [\(date)] - \(method) \(path)\(_message)"
         )
 
         #endif
@@ -30,8 +46,8 @@ public extension RestDataService {
 
 private extension RestDataService {
 
-    func getIcon(by response: URLResponse) -> String {
-        mapError(by: response) == nil ? "✅" : "🔴"
+    func getIconIf(success: Bool) -> String {
+        success ? "✅" : "🔴"
     }
 
     func getTimeTaken(startTime: DispatchTime?) -> String {

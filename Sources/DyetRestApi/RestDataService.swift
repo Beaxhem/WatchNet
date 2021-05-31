@@ -20,14 +20,6 @@ public protocol RestDataService {
 }
 
 extension RestDataService {
-    
-    private var allowedDiskSize: Int {
-        100 * 1024 * 1024
-    }
-
-    private var cache: URLCache {
-        URLCache(memoryCapacity: 0, diskCapacity: allowedDiskSize, diskPath: "responseCache")
-    }
 
     var base: URLSession {
         let configuration = URLSessionConfiguration.default
@@ -40,20 +32,61 @@ extension RestDataService {
 
 public extension RestDataService {
 
-    @discardableResult
-    func execute(query: String = "", parameters: [String: String]? = nil, force: Bool = true, completion: @escaping (Result<Data, NetworkError>) -> Void) -> URLSessionDataTask? {
+    func execute(
+        query: String = "",
+        parameters: [String: String]? = nil,
+        force: Bool = true,
+        completion: @escaping (Result<Data, NetworkError>) -> Void
+    )   {
+
+        guard let request = getRequest(query: query, parameters: parameters) else {
+
+            completion(.failure(.badRequest))
+            return
+        }
+
+        resumeTask(request: request, force: force, completion: completion)
+
+    }
+
+    func executeWithBody<T: Encodable>(
+        _ body: T,
+        query: String = "",
+        parameters: [String: String]? = nil,
+        completion: @escaping (Result<Data, NetworkError>) -> Void
+    ) {
+
+        guard var request = getPostRequest(query: query, parameters: parameters) else {
+            completion(.failure(.badRequest))
+            return
+        }
+
+        guard let data = try? JSONEncoder().encode(body) else {
+            completion(.failure(.badData))
+            return
+        }
+
+        request.httpBody = data
+
+        resumeTask(request: request, completion: completion)
+
+    }
+}
+
+private extension RestDataService {
+
+    func resumeTask(
+        request: URLRequest,
+        force: Bool = false,
+        completion: @escaping (Result<Data, NetworkError>) -> Void
+    ) {
 
         let start = DispatchTime.now()
 
-        guard let path = path, let request = getRequest(path: path, query: query, parameters: parameters) else {
-
-            completion(.failure(.badRequest))
-            return nil
-        }
-
         if !force, let cachedResponse = cache.cachedResponse(for: request) {
             completion(.success(cachedResponse.data))
-            return nil
+            log(success: true, message: "from cache")
+            return
         }
 
         let task = base.dataTask(with: request) { data, response, error in
@@ -65,12 +98,13 @@ public extension RestDataService {
 
             log(response: response, startTime: start)
 
-            if let error = mapError(by: response) {
-                completion(.failure(error))
+            if let errorFromStatusCode = mapError(by: response) {
+                completion(.failure(errorFromStatusCode))
                 return
             }
 
             guard let data = data else {
+                completion(.failure(.badData))
                 return
             }
 
@@ -85,7 +119,6 @@ public extension RestDataService {
 
         task.resume()
 
-        return task
     }
 
 }
