@@ -5,6 +5,8 @@
 //  Created by Ilya Senchukov on 06.05.2021.
 //
 
+
+#if os(iOS) || os(watchOS) || os(tvOS)
 import Foundation
 import UIKit
 
@@ -19,7 +21,7 @@ public class ImageService: RestDataService {
     public var method: HTTPMethod = .get
 
     public var cacheable = true
-    
+
 }
 
 public extension ImageService {
@@ -46,3 +48,8 @@ public extension ImageService {
     }
 
 }
+
+
+#endif
+
+
