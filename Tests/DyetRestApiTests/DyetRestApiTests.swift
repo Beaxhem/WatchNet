@@ -1,4 +1,5 @@
 import XCTest
+import Cocoa
 @testable import DyetRestApi
 
 final class TodoService: RestJSONService {
@@ -141,7 +142,6 @@ final class MedicoRestApiTests: XCTestCase {
     func testImageExample() {
         let expectation = XCTestExpectation()
 
-        #if !os(macOS)
         let service = ImageService()
 
         service.image(for: "https://via.placeholder.com/150") { res in
@@ -155,9 +155,6 @@ final class MedicoRestApiTests: XCTestCase {
         }
 
         wait(for: [expectation], timeout: 10)
-        #else
-        expectation.fulfill()
-        #endif
     }
 
     func testCommentsExample() {
@@ -208,14 +205,15 @@ final class MedicoRestApiTests: XCTestCase {
     func testCache() {
         let expectation = XCTestExpectation()
 
-        #if !os(macOS)
         func check(image1: UIImage, image2: UIImage) -> Bool {
-            image1.pngData() == image2.pngData()
+            #if !os(macOS)
+            return image1.pngData() == image2.pngData()
+            #else
+            return image1.tiffRepresentation(using: .jpeg, factor: 1) == image2.tiffRepresentation(using: .jpeg, factor: 1)
+            #endif
         }
 
         let service = ImageService()
-
-
 
         var image: UIImage?
 
@@ -248,8 +246,5 @@ final class MedicoRestApiTests: XCTestCase {
         }
 
         wait(for: [expectation], timeout: 10)
-        #else
-        expectation.fulfill()
-        #endif
     }
 }
