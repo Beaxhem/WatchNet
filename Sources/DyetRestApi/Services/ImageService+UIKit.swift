@@ -6,9 +6,13 @@
 //
 
 
-#if os(iOS) || os(watchOS) || os(tvOS)
+
 import Foundation
+#if !os(macOS)
 import UIKit
+#else
+import Cocoa
+#endif
 
 public class ImageService: RestDataService {
 
@@ -24,6 +28,9 @@ public class ImageService: RestDataService {
 
 }
 
+
+
+#if !os(macOS)
 public extension ImageService {
 
     func image(for path: String, force: Bool = false, completion: @escaping (Result<UIImage, NetworkError>) -> Void) {
@@ -49,6 +56,32 @@ public extension ImageService {
 
 }
 
+#else
+
+public extension ImageService {
+
+    func image(for path: String, force: Bool = false, completion: @escaping (Result<NSImage, NetworkError>) -> Void) {
+        self.path = path
+
+        (self as RestDataService).execute(force: force) { res in
+            switch res {
+                case .failure(let error):
+                    completion(.failure(error))
+                case .success(let data):
+                    if let image = NSImage(data: data) {
+                        completion(.success(image))
+                        return
+                    }
+
+                    completion(.failure(.badData))
+
+            }
+
+        }
+
+    }
+
+}
 
 #endif
 
