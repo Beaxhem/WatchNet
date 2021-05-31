@@ -32,7 +32,8 @@ extension RestDataService {
     }
 
     func getURL(path: String, query: String = "", parameters: [String: String]?) -> URL? {
-        guard let query = query.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+        guard let query = query.urlAllowed else {
+            print("Contains not allowed characters")
             return nil
         }
 

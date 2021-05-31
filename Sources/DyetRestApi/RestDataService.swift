@@ -49,8 +49,8 @@ public extension RestDataService {
 
     }
 
-    func post<T: Encodable>(
-        body: T,
+    func executeWithBody<T: Encodable>(
+        _ body: T,
         query: String = "",
         parameters: [String: String]? = nil,
         completion: @escaping (Result<Data, NetworkError>) -> Void
