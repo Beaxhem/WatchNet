@@ -33,7 +33,7 @@ public extension RestJSONService {
 
 }
 
-private extension RestJSONService {
+public extension RestJSONService {
 
     func decode(data: Data) -> Output? {
         do {

@@ -1,5 +1,5 @@
 import XCTest
-import Cocoa
+
 @testable import DyetRestApi
 
 final class TodoService: RestJSONService {
