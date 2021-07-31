@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  File
+//  DyetRestApi+Rx.swift
+//  DyetRestApi+Rx
 //
 //  Created by Ilya Senchukov on 01.08.2021.
 //
@@ -10,7 +10,7 @@ import RxSwift
 
 public extension RestJSONService {
 
-    public func executeObservable(query: String = "", parameters: [String: String]? = nil) -> Observable<Output>{
+    func executeObservable(query: String = "", parameters: [String: String]? = nil) -> Observable<Output> {
         
         Observable.create { observer in
             (self as RestDataService).execute(query: query, parameters: parameters) { res in
