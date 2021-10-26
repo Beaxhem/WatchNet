@@ -25,7 +25,7 @@ Swift 5.1+
 Adding the library to your project is just easy. Simply add `https://github.com/DyetApp/DyetRestApi` to the swift packages of your application 
 
 or insert 
-```
+```swift
 dependencies: [
     .package(url: "https://github.com/DyetApp/DyetRestApi", .upToNextMajor(from: "1.0.0"))
 ]
@@ -36,7 +36,7 @@ into your `Package.swift` file.
 
 This is how to create a simple service for fetching todos:
 
-```
+```swift
 final class TodoService: RestJSONService {
 
     typealias Output = Todo // Type of the expected response
@@ -54,7 +54,7 @@ final class TodoService: RestJSONService {
 
 Somewhere in your code: 
 
-```
+```swift
 let service = TodoService()
 
 service.execute { res in
@@ -72,10 +72,7 @@ service.execute { res in
 
 ### Builtin service for fetching images and caching them
 
-```
-import AMS
-
-***
+```swift
 
 let url = "https://via.placeholder.com/150"
 imageService.shared.image(for: url) { [weak self] result in
