@@ -20,7 +20,7 @@ public enum NetworkError: Error {
 
 }
 
-extension RestDataService {
+extension RestService {
 
     func mapError(by response: URLResponse) -> NetworkError? {
         let res = response as! HTTPURLResponse

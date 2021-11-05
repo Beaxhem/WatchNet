@@ -27,5 +27,8 @@ let package = Package(
         .testTarget(
             name: "DyetRestApiTests",
             dependencies: ["DyetRestApi"]),
+        .testTarget(
+            name: "RxDyetRestApiTests",
+            dependencies: ["RxDyetRestApi", "DyetRestApi", "RxSwift"])
     ]
 )

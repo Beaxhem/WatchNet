@@ -1,30 +1,8 @@
 import XCTest
 
-@testable import DyetRestApi
+import DyetRestApi
 
-final class TodoService: RestJSONService {
-
-    struct Todo: Codable {
-
-        var userId: Int
-        var id: Int
-        var title: String
-        var completed: Bool
-    }
-
-    typealias Output = Todo
-
-    var path: String? = "https://jsonplaceholder.typicode.com/todos/1"
-
-    var method: HTTPMethod = .get
-
-    var defaultParamenters: [String : String]?
-
-    var cacheable = false
-
-}
-
-final class BadMethodService: RestJSONService {
+final class TodoService: RestService {
 
     struct Todo: Codable {
 
@@ -34,19 +12,37 @@ final class BadMethodService: RestJSONService {
         var completed: Bool
     }
 
-    typealias Output = Todo
+    override func path() -> String {
+        "https://jsonplaceholder.typicode.com/todos/1"
+    }
 
-    var path: String? = "https://jsonplaceholder.typicode.com/todos/1"
+    override func method() -> HTTPMethod {
+        .get
+    }
 
-    var method: HTTPMethod = .post
-
-    var defaultParamenters: [String : String]?
-
-    var cacheable = false
+    override func cacheable() -> Bool {
+        true
+    }
 
 }
 
-final class CommentsService: RestJSONService {
+final class BadMethodService: RestService {
+
+    override func path() -> String {
+        "https://jsonplaceholder.typicode.com/todos/1"
+    }
+
+    override func method() -> HTTPMethod {
+        .post
+    }
+
+    override func cacheable() -> Bool {
+        false
+    }
+
+}
+
+final class CommentsService: RestService {
 
     struct Comment: Decodable {
 
@@ -58,19 +54,24 @@ final class CommentsService: RestJSONService {
 
     }
 
-    typealias Output = [Comment]
+    override func path() -> String {
+        "https://jsonplaceholder.typicode.com/comments"
+    }
 
-    var path: String? = "https://jsonplaceholder.typicode.com/comments"
+    override func method() -> HTTPMethod {
+        .get
+    }
 
-    var method: HTTPMethod = .get
+    override func cacheable() -> Bool {
+        false
+    }
 
-    var defaultParamenters: [String : String]?
-
-    var cacheable = false
-
+    override func parameters() -> [String : String]? {
+        ["postId": "1"]
+    }
 }
 
-struct BadURLService:  RestJSONService {
+class BadURLService: RestService {
 
     struct Todo: Codable {
 
@@ -80,19 +81,21 @@ struct BadURLService:  RestJSONService {
         var completed: Bool
     }
 
-    typealias Output = Todo
+    override func path() -> String {
+        "jsonplaceholder.typicode.com/tod/1"
+    }
 
-    var path: String? = "jsonplaceholder.typicode.com/tod/1"
+    override func method() -> HTTPMethod {
+        .get
+    }
 
-    var method: HTTPMethod = .get
-
-    var defaultParamenters: [String : String]?
-
-    var cacheable = false
+    override func cacheable() -> Bool {
+        false
+    }
 
 }
 
-final class MedicoRestApiTests: XCTestCase {
+final class DyetRestApiTests: XCTestCase {
 
     func testTodoService() {
 
@@ -163,7 +166,7 @@ final class MedicoRestApiTests: XCTestCase {
 
         let expectation = XCTestExpectation()
 
-        service.execute(parameters: ["postId": "1"]) { res in
+        service.execute { res in
             switch res {
                 case .failure(let error):
                     print(error)

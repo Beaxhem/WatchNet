@@ -1,20 +1,21 @@
 //
-//  RestDataService+Cache.swift
+//  RestService+Cache.swift
 //  
 //
-//  Created by Ilya Senchukov on 31.05.2021.
+//  Created by Ilya Senchukov on 05.11.2021.
 //
 
 import Foundation
 
-extension RestDataService {
+extension RestService {
 
-    private var allowedDiskSize: Int {
+    var allowedDiskSize: Int {
         100 * 1024 * 1024
     }
 
     var cache: URLCache {
         URLCache(memoryCapacity: 0, diskCapacity: allowedDiskSize, diskPath: "responseCache")
     }
-    
+
 }
+
