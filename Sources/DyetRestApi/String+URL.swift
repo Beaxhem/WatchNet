@@ -7,10 +7,14 @@
 
 import Foundation
 
-public extension String {
+extension String {
 
     var urlAllowed: String? {
         self.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)
+    }
+
+    var queryAllowed: String? {
+        self.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
     }
 
 }

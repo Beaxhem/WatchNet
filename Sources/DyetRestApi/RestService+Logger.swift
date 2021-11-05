@@ -1,13 +1,13 @@
 //
-//  RestDataService+Logger.swift
+//  RestService+Logger.swift
 //  
 //
-//  Created by Ilya Senchukov on 28.05.2021.
+//  Created by Ilya Senchukov on 05.11.2021.
 //
 
 import Foundation
 
-public extension RestDataService {
+public extension RestService {
 
     func log(response: URLResponse, startTime: DispatchTime? = nil) {
         #if DEBUG
@@ -26,37 +26,30 @@ public extension RestDataService {
     func log(success: Bool, message: String? = nil, separator: String = ", ") {
         #if DEBUG
 
+        let method = method().rawValue
+
         let icon = getIconIf(success: success)
         let date = Date()
-        let method = method.string
-        let path = path ?? "empty_path"
-        var _message = ""
-        if let message = message {
-            _message = separator + message
-        }
+        let _message = message != nil ? message! + separator : ""
 
-        print(
-            "\(icon) [\(date)] - \(method) \(path)\(_message)"
-        )
+        print("\(icon) [\(date)] - \(method) \(path())\(_message)")
 
         #endif
     }
 
 }
 
-private extension RestDataService {
+private extension RestService {
 
     func getIconIf(success: Bool) -> String {
         success ? "✅" : "🔴"
     }
 
     func getTimeTaken(startTime: DispatchTime?) -> String {
-
-        guard let startTime = startTime else {
-            return ""
-        }
+        guard let startTime = startTime else { return "" }
 
         return "\((DispatchTime.now().uptimeNanoseconds - startTime.uptimeNanoseconds) / 1_000_000) ms "
     }
 
 }
+

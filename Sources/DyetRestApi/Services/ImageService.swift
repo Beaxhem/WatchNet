@@ -18,27 +18,37 @@ import Cocoa
 public typealias UIImage = NSImage
 #endif
 
-public class ImageService: RestDataService {
+public class ImageService: RestService {
 
-    static let shared = ImageService()
+    public static let shared = ImageService()
 
-    public var defaultParamenters: [String : String]? = nil
+    private var _path: String?
 
-    public var path: String?
+    public override func path() -> String {
+        if let path = _path {
+            return path
+        }
+        fatalError("Path is not set")
+    }
 
-    public var method: HTTPMethod = .get
+    public override func method() -> HTTPMethod {
+        .get
+    }
 
-    public var cacheable = true
+    public override func cacheable() -> Bool {
+        true
+    }
 
 }
 
 
 public extension ImageService {
 
-    func image(for path: String, force: Bool = false, completion: @escaping (Result<UIImage, NetworkError>) -> Void) {
-        self.path = path
+    @discardableResult
+    func image(for path: String, force: Bool = false, completion: @escaping (Result<UIImage, NetworkError>) -> Void) -> URLSessionDataTask? {
+        self._path = path
 
-        (self as RestDataService).execute(force: force) { res in
+        let task = execute(force: force) { res in
             switch res {
                 case .failure(let error):
                     completion(.failure(error))
@@ -49,11 +59,10 @@ public extension ImageService {
                     }
 
                     completion(.failure(.badData))
-
             }
-
         }
 
+        return task
     }
 
 }
