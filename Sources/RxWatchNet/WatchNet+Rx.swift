@@ -1,12 +1,12 @@
 //
-//  DyetRestApi+Rx.swift
-//  DyetRestApi+Rx
+//  WatchNet+Rx.swift
+//  WatchNet+Rx
 //
 //  Created by Ilya Senchukov on 01.08.2021.
 //
 
 import UIKit
-import DyetRestApi
+import WatchNet
 import RxSwift
 import Foundation
 

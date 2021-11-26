@@ -1,7 +1,7 @@
 
 import XCTest
-import RxDyetRestApi
-import DyetRestApi
+import RxWatchNet
+import WatchNet
 import RxSwift
 
 final class RxTodoService: RestService {
@@ -28,7 +28,7 @@ final class RxTodoService: RestService {
 
 }
 
-final class RxDyetRestApiTests: XCTestCase {
+final class RxWatchNetTests: XCTestCase {
 
     let disposeBag = DisposeBag()
 
