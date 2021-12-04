@@ -4,14 +4,14 @@
 import PackageDescription
 
 let package = Package(
-    name: "DyetRestApi",
+    name: "WatchNet",
     products: [
         .library(
-            name: "DyetRestApi",
-            targets: ["DyetRestApi"]),
+            name: "WatchNet",
+            targets: ["WatchNet"]),
         .library(
-            name: "RxDyetRestApi",
-            targets: ["RxDyetRestApi"]
+            name: "RxWatchNet",
+            targets: ["RxWatchNet"]
         )
     ],
     dependencies: [
@@ -19,16 +19,16 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "DyetRestApi",
+            name: "WatchNet",
             dependencies: []),
         .target(
-            name: "RxDyetRestApi",
-            dependencies: ["RxSwift", "DyetRestApi"]),
+            name: "RxWatchNet",
+            dependencies: ["RxSwift", "WatchNet"]),
         .testTarget(
-            name: "DyetRestApiTests",
-            dependencies: ["DyetRestApi"]),
+            name: "WatchNetTests",
+            dependencies: ["WatchNet"]),
         .testTarget(
-            name: "RxDyetRestApiTests",
-            dependencies: ["RxDyetRestApi", "DyetRestApi", "RxSwift"])
+            name: "RxWatchNetTests",
+            dependencies: ["RxWatchNet", "WatchNet", "RxSwift"])
     ]
 )

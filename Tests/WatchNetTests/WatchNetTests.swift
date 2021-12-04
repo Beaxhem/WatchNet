@@ -1,6 +1,6 @@
 import XCTest
 
-import DyetRestApi
+import WatchNet
 
 final class TodoService: RestService {
 
@@ -95,7 +95,7 @@ class BadURLService: RestService {
 
 }
 
-final class DyetRestApiTests: XCTestCase {
+final class WatchNetTests: XCTestCase {
 
     func testTodoService() {
 

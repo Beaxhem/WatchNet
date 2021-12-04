@@ -1,6 +1,6 @@
-# DyetRestApi
+# WatchNet
 
-DyetRestApi is a http networking library.
+WatchNet is a http networking library.
 
 * [Concept](#Concept)
 * [Requirements](#Requirements)
@@ -22,12 +22,12 @@ Swift 5.1+
 
 # Installation 
 
-Adding the library to your project is just easy. Simply add `https://github.com/DyetApp/DyetRestApi` to the swift packages of your application 
+Adding the library to your project is just easy. Simply add `https://github.com/DyetApp/WatchNet` to the swift packages of your application 
 
 or insert 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/DyetApp/DyetRestApi", .upToNextMajor(from: "1.0.0"))
+    .package(url: "https://github.com/DyetApp/WatchNet", .upToNextMajor(from: "1.0.0"))
 ]
 ```
 into your `Package.swift` file.
@@ -100,4 +100,4 @@ If you have any ideas of how to improve the program, feel free to add new Issues
 
 # License
 
-The library is distributed under [MIT License](https://github.com/DyetApp/DyetRestApi/LICENSE)
+The library is distributed under [MIT License](https://github.com/DyetApp/WatchNet/LICENSE)
