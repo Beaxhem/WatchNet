@@ -29,7 +29,7 @@ extension RestService {
 
     private var session: URLSession {
         let configuration = URLSessionConfiguration.default
-        configuration.requestCachePolicy = .returnCacheDataElseLoad
+        configuration.requestCachePolicy = cacheable() ? .returnCacheDataElseLoad : .reloadIgnoringLocalCacheData
         configuration.urlCache = cache
         return URLSession(configuration: configuration)
     }
@@ -83,16 +83,16 @@ public extension RestService {
             return nil
         }
 
-        let start = DispatchTime.now()
-
-        if cacheable(), !force , let cachedResponse = cache.cachedResponse(for: request) {
-            completion(.success(cachedResponse.data))
-            log(success: true, message: "from cache")
-            return nil
+        let baseCachePolicy = session.configuration.requestCachePolicy
+        if force {
+            session.configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
         }
+
+        let start = DispatchTime.now()
 
         let task = session.dataTask(with: request) { [weak self] data, response, error in
             guard let self = self else { return }
+            self.session.configuration.requestCachePolicy = baseCachePolicy
 
             guard let response = response,
                   error == nil else {
@@ -111,11 +111,6 @@ public extension RestService {
             guard let data = data else {
                 completion(.failure(.badData))
                 return
-            }
-
-            if self.cacheable() {
-                let cachedData = CachedURLResponse(response: response, data: data)
-                self.cache.storeCachedResponse(cachedData, for: request)
             }
 
             completion(.success(data))
