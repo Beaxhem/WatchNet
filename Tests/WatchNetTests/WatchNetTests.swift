@@ -152,7 +152,7 @@ final class WatchNetTests: XCTestCase {
                 case .failure(let error):
                     print(error)
                     XCTFail()
-                case .success:
+                case .success(let image):
                     expectation.fulfill()
             }
         }

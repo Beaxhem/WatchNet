@@ -35,7 +35,7 @@ extension RestService {
     }
 
     var url: URL? {
-        return URL(string: [path(), parametersString].joined())
+        return URL(string: path() + parametersString)
     }
 
     var parametersString: String {
@@ -85,7 +85,7 @@ public extension RestService {
 
         let start = DispatchTime.now()
 
-        if !force, let cachedResponse = cache.cachedResponse(for: request) {
+        if cacheable(), !force , let cachedResponse = cache.cachedResponse(for: request) {
             completion(.success(cachedResponse.data))
             log(success: true, message: "from cache")
             return nil
