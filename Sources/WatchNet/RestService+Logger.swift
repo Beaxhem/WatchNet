@@ -32,7 +32,7 @@ public extension RestService {
         let date = Date()
         let _message = message != nil ? message! + separator : ""
 
-        print("\(icon) [\(date)] - \(method) \(path())\(_message)")
+        print("\(icon) [\(date)] - \(method) \(path()) \(_message)")
 
         #endif
     }

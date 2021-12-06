@@ -27,7 +27,7 @@ Adding the library to your project is just easy. Simply add `https://github.com/
 or insert 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/DyetApp/WatchNet", .upToNextMajor(from: "1.0.0"))
+    .package(url: "https://github.com/DyetApp/WatchNet", .upToNextMajor(from: "2.0.0"))
 ]
 ```
 into your `Package.swift` file.
@@ -37,17 +37,27 @@ into your `Package.swift` file.
 This is how to create a simple service for fetching todos:
 
 ```swift
-final class TodoService: RestJSONService {
+final class TodoService: RestService {
 
-    typealias Output = Todo // Type of the expected response
+    struct Todo: Codable {
 
-    var path: String? = "https://jsonplaceholder.typicode.com/todos/1"
+        var userId: Int
+        var id: Int
+        var title: String
+        var completed: Bool
+    }
 
-    var method: HTTPMethod = .get
+    override func path() -> String {
+        "https://jsonplaceholder.typicode.com/todos/1"
+    }
 
-    var defaultParamenters: [String : String]?
+    override func method() -> HTTPMethod {
+        .get
+    }
 
-    var cacheable = false // store in cache (use force parameter if needed)
+    override func cacheable() -> Bool {
+        true
+    }
 
 }
 ```
@@ -57,7 +67,7 @@ Somewhere in your code:
 ```swift
 let service = TodoService()
 
-service.execute { res in
+service.execute(decodingTo: TodoService.Todo.self) { res in
     switch res {
         case .failure(let error):
             print(error)
@@ -74,16 +84,17 @@ service.execute { res in
 
 ```swift
 
+let service = ImageService()
+
 let url = "https://via.placeholder.com/150"
-imageService.shared.image(for: url) { [weak self] result in
+
+service.image(for: "https://via.placeholder.com/150") { res in
     switch res {
-    case .success(let image):
-        self?.iconImageView.image = image
-    case .failure(let error):
-        print(error)
-    
+        case .failure(let error):
+            print(error)
+        case .success(let image):
+            imageView.image = image
     }
-    
 }
   
 ```
