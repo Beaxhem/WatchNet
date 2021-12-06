@@ -16,9 +16,8 @@ The idea was to replace an old-fashioned approach of managing network requests i
 
 # Requirements
 
-iOS 10.0+ / macOS 10.12+ / tvOS 10.0+ / watchOS 3.0+ 
+iOS 13.0+ / macOS 10.12+ / tvOS 10.0+ / watchOS 3.0+ 
 Xcode 11+
-Swift 5.1+
 
 # Installation 
 
@@ -27,7 +26,7 @@ Adding the library to your project is just easy. Simply add `https://github.com/
 or insert 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/DyetApp/WatchNet", .upToNextMajor(from: "2.0.0"))
+    .package(url: "https://github.com/DyetApp/WatchNet", .upToNextMajor(from: "3.0.1"))
 ]
 ```
 into your `Package.swift` file.
