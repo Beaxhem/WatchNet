@@ -7,8 +7,6 @@
 
 import Foundation
 
-public struct AnyEncodable: Encodable { }
-
 open class RestService {
 
     open func method() -> HTTPMethod { .get }
@@ -17,7 +15,7 @@ open class RestService {
 
     open func parameters() -> [String: String]? { nil }
 
-    open func body() -> AnyEncodable? { nil }
+    open func body() -> Data? { nil }
 
     open func cacheable() -> Bool { fatalError("cacheable() -> Bool not implemented") }
 
@@ -61,10 +59,12 @@ extension RestService {
         var request = URLRequest(url: url)
         request.httpMethod = method().rawValue
 
-        if let body = body(),
-           let data = try? JSONEncoder().encode(body) {
-            request.httpBody = data
+        if let body = body() {
+            request.httpBody = body
         }
+
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
 
         return request
     }
@@ -77,7 +77,6 @@ public extension RestService {
     func execute(force: Bool = true,
                  completion: @escaping (Result<Data, NetworkError>) -> Void
     ) -> URLSessionDataTask? {
-
         guard let request = request else {
             completion(.failure(.badRequest))
             return nil
@@ -89,7 +88,6 @@ public extension RestService {
         }
 
         let start = DispatchTime.now()
-
         let task = session.dataTask(with: request) { [weak self] data, response, error in
             guard let self = self else { return }
             self.session.configuration.requestCachePolicy = baseCachePolicy
