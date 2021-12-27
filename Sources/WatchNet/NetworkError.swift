@@ -18,6 +18,27 @@ public enum NetworkError: Error {
     case badData
     case unknownError(String)
 
+    var string: String {
+        switch self {
+            case .notFound:
+                return "Not found"
+            case .unauthorized:
+                return "Unauthorized"
+            case .badRequest:
+                return "Bad request"
+            case .noAccess:
+                return "No access"
+            case .wrongMethod:
+                return "Wrong method"
+            case .serverError:
+                return "Internal error"
+            case .badData:
+                return "Bad data"
+            case .unknownError(let error):
+                return error
+        }
+    }
+
 }
 
 extension RestService {

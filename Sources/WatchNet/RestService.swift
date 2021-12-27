@@ -85,6 +85,7 @@ public extension RestService {
                  completion: @escaping (Result<Data, NetworkError>) -> Void
     ) -> URLSessionDataTask? {
         guard let request = request else {
+            log(.failure(NetworkError.badRequest), startTime: .now())
             completion(.failure(.badRequest))
             return nil
         }
@@ -100,23 +101,24 @@ public extension RestService {
 
             guard let response = response,
                   error == nil else {
-                      log(success: false, message: "Not found")
+                      log(.failure(NetworkError.notFound), startTime: start)
                       completion(.failure(.notFound))
                       return
             }
 
-            log(response: response, startTime: start)
-
             if let errorFromStatusCode = mapError(by: response) {
+                log(.failure(errorFromStatusCode), startTime: start)
                 completion(.failure(errorFromStatusCode))
                 return
             }
 
             guard let data = data else {
+                log(.failure(NetworkError.badData), startTime: start)
                 completion(.failure(.badData))
                 return
             }
 
+            log(.success(response), startTime: start)
             completion(.success(data))
         }
 
@@ -134,11 +136,11 @@ public extension RestService {
                         let object = try JSONDecoder().decode(T.self, from: data)
                         completion(.success(object))
                     } catch {
+                        log(.failure(.badData))
                         completion(.failure(.badData))
                     }
                 case .failure(let error):
                     completion(.failure(error))
-
             }
         }
 
