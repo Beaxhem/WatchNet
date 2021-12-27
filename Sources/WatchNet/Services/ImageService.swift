@@ -24,18 +24,18 @@ public class ImageService: RestService {
 
     private var _path: String?
 
-    public override func path() -> String {
+    public func path() -> String {
         if let path = _path {
             return path
         }
         fatalError("Path is not set")
     }
 
-    public override func method() -> HTTPMethod {
+    public func method() -> HTTPMethod {
         .get
     }
 
-    public override func cacheable() -> Bool {
+    public func cacheable() -> Bool {
         true
     }
 

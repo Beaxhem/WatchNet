@@ -7,19 +7,27 @@
 
 import Foundation
 
-open class RestService {
+public protocol RestService {
+    func method() -> HTTPMethod
 
-    open func method() -> HTTPMethod { .get }
+    func path() -> String
 
-    open func path() -> String { fatalError("path() -> HTTPMethod? not implemented") }
+    func parameters() -> [String: String]?
 
-    open func parameters() -> [String: String]? { nil }
+    func body() -> Data?
 
-    open func body() -> Data? { nil }
+    func cacheable() -> Bool
+}
 
-    open func cacheable() -> Bool { fatalError("cacheable() -> Bool not implemented") }
+public extension RestService {
 
-    public init() { }
+    func parameters() -> [String: String]? {
+        nil
+    }
+
+    func body() -> Data? {
+        nil
+    }
 
 }
 
@@ -28,7 +36,6 @@ extension RestService {
     private var session: URLSession {
         let configuration = URLSessionConfiguration.default
         configuration.requestCachePolicy = cacheable() ? .returnCacheDataElseLoad : .reloadIgnoringLocalCacheData
-        configuration.urlCache = cache
         return URLSession(configuration: configuration)
     }
 
@@ -88,20 +95,19 @@ public extension RestService {
         }
 
         let start = DispatchTime.now()
-        let task = session.dataTask(with: request) { [weak self] data, response, error in
-            guard let self = self else { return }
-            self.session.configuration.requestCachePolicy = baseCachePolicy
+        let task = session.dataTask(with: request) { data, response, error in
+            session.configuration.requestCachePolicy = baseCachePolicy
 
             guard let response = response,
                   error == nil else {
-                      self.log(success: false, message: "Not found")
+                      log(success: false, message: "Not found")
                       completion(.failure(.notFound))
                       return
             }
 
-            self.log(response: response, startTime: start)
+            log(response: response, startTime: start)
 
-            if let errorFromStatusCode = self.mapError(by: response) {
+            if let errorFromStatusCode = mapError(by: response) {
                 completion(.failure(errorFromStatusCode))
                 return
             }
@@ -138,8 +144,6 @@ public extension RestService {
 
         return task
     }
-
-    
 
 }
 
