@@ -59,7 +59,6 @@ public extension WebsocketService {
             if let error = error {
                 print("Error when sending PING \(error)")
             } else {
-                print("Web Socket connection is alive")
                 DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
                     ping(task: task)
                 }
@@ -74,7 +73,6 @@ public extension WebsocketService {
         onError: ((Error) -> Void)?
     ) -> URLSessionWebSocketTask? {
         let task = connect { res in
-            print(res)
             switch res {
                 case .success(let message):
                     switch message {
