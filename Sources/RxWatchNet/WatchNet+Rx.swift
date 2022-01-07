@@ -10,8 +10,6 @@ import WatchNet
 import RxSwift
 import Foundation
 
-extension RestService: ReactiveCompatible { }
-
 public extension Reactive where Base: RestService {
 
     func fetch<T: Decodable>(decodingTo: T.Type) -> Single<T> {
