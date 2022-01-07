@@ -9,8 +9,6 @@ import Foundation
 import WatchNet
 import RxSwift
 
-extension WebsocketService: ReactiveCompatible { }
-
 public extension Reactive where Base: WebsocketService {
 
     func receive(onData: ((Data) -> ())?,
@@ -37,7 +35,7 @@ public extension Reactive where Base: WebsocketService {
             }
 
             return Disposables.create {
-                task?.cancel()
+                task?.cancel(with: .goingAway, reason: nil)
             }
         }
 
@@ -46,7 +44,7 @@ public extension Reactive where Base: WebsocketService {
 
 }
 
-public extension Reactive where Base: WebsocketObjectService {
+public extension Reactive where Base: WebsocketService {
 
     func receive<T: Decodable>(decodingTo: T.Type) -> Observable<T> {
         Observable.create { observer in
@@ -57,7 +55,7 @@ public extension Reactive where Base: WebsocketObjectService {
             }
 
             return Disposables.create {
-                task?.cancel()
+                task?.cancel(with: .goingAway, reason: nil)
             }
         }
     }

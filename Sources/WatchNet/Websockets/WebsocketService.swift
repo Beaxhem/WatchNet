@@ -7,25 +7,29 @@
 
 import Foundation
 
-open class WebsocketService {
-
-    public var session: URLSession {
-        URLSession.shared
-    }
-
-    public init() { }
-
-    open func path() -> String {
-        assertionFailure("Not implemented path() method")
-        return ""
-    }
-    
+public protocol WebsocketService {
+    func path() -> String
 }
 
 private extension WebsocketService {
 
+    var session: URLSession {
+        .init(configuration: .default)
+    }
+
     var url: URL? {
         URL(string: path())
+    }
+
+    var decoder: JSONDecoder {
+        .init()
+    }
+
+    func receive(task: URLSessionWebSocketTask, receiveHandler: @escaping (Result<URLSessionWebSocketTask.Message, Error>) -> Void) {
+        task.receive(completionHandler: { res in
+            receiveHandler(res)
+            receive(task: task, receiveHandler: receiveHandler)
+        })
     }
 
 }
@@ -40,8 +44,7 @@ public extension WebsocketService {
         }
 
         let task = session.webSocketTask(with: url)
-
-        task.receive(completionHandler: receiveHandler)
+        receive(task: task, receiveHandler: receiveHandler)
         task.resume()
 
         return task
@@ -49,19 +52,29 @@ public extension WebsocketService {
 
 }
 
-open class WebsocketObjectService: WebsocketService {
+public extension WebsocketService {
 
-    private lazy var decoder = JSONDecoder()
+    func ping(task: URLSessionWebSocketTask?) {
+        task?.sendPing { error in
+            if let error = error {
+                print("Error when sending PING \(error)")
+            } else {
+                print("Web Socket connection is alive")
+                DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
+                    ping(task: task)
+                }
+            }
+        }
+    }
 
     @discardableResult
-    public func connect<T: Decodable>(
+    func connect<T: Decodable>(
         decodingTo: T.Type,
         onDecode: @escaping (T) -> Void,
         onError: ((Error) -> Void)?
     ) -> URLSessionWebSocketTask? {
-        super.connect { [weak self] res in
-            guard let self = self else { return }
-
+        let task = connect { res in
+            print(res)
             switch res {
                 case .success(let message):
                     switch message {
@@ -70,7 +83,7 @@ open class WebsocketObjectService: WebsocketService {
                         case .string(let string):
                             let data = Data(string.utf8)
                             do {
-                                onDecode(try self.decoder.decode(T.self, from: data))
+                                onDecode(try decoder.decode(T.self, from: data))
                             } catch {
                                 onError?(error)
                             }
@@ -81,7 +94,10 @@ open class WebsocketObjectService: WebsocketService {
                     onError?(error)
             }
         }
+
+        ping(task: task)
         
+        return task
     }
 
 }
