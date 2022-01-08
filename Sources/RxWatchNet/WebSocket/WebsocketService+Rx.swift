@@ -8,6 +8,7 @@
 import Foundation
 import WatchNet
 import RxSwift
+import RxCocoa
 
 public extension Reactive where Base: WebsocketService {
 
@@ -16,7 +17,8 @@ public extension Reactive where Base: WebsocketService {
                  onError: ((Error) -> ())?) -> Disposable {
 
         let observable = Observable<Void>.create { observer in
-            let task = self.base.connect { res in
+            var base = base
+            let task = base.connect { res in
                 switch res {
                     case .success(let message):
                         switch message {
@@ -48,6 +50,7 @@ public extension Reactive where Base: WebsocketService {
 
     func receive<T: Decodable>(decodingTo: T.Type) -> Observable<T> {
         Observable.create { observer in
+            var base = base
             let task = base.connect(decodingTo: T.self) { object in
                 observer.onNext(object)
             } onError: { error in

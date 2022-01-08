@@ -26,7 +26,7 @@ let package = Package(
             dependencies: []),
         .target(
             name: "RxWatchNet",
-            dependencies: ["RxSwift", "WatchNet"]),
+            dependencies: ["RxSwift", "WatchNet",.productItem(name: "RxCocoa", package: "RxSwift", condition: .when(platforms: [.iOS])) ]),
         .testTarget(
             name: "WatchNetTests",
             dependencies: ["WatchNet"]),
@@ -35,3 +35,5 @@ let package = Package(
             dependencies: ["RxWatchNet", "WatchNet", "RxSwift"])
     ]
 )
+
+

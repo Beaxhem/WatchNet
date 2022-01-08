@@ -7,8 +7,26 @@
 
 import Foundation
 
+public protocol TaskStorage {
+    var task: URLSessionWebSocketTask? { get set }
+}
+
+public extension TaskStorage {
+
+    func send(message: URLSessionWebSocketTask.Message, completion: @escaping (Error?) -> Void) {
+        task?.send(message, completionHandler: completion)
+    }
+
+    mutating func setTask(task: URLSessionWebSocketTask?) {
+        self.task = task
+    }
+}
+
 public protocol WebsocketService {
+    associatedtype Storage: TaskStorage
     func path() -> String
+
+    var taskStorage: Storage { get set }
 }
 
 private extension WebsocketService {
@@ -37,7 +55,7 @@ private extension WebsocketService {
 public extension WebsocketService {
 
     @discardableResult
-    func connect(receiveHandler: @escaping (Result<URLSessionWebSocketTask.Message, Error>) -> Void) -> URLSessionWebSocketTask? {
+    mutating func connect(receiveHandler: @escaping (Result<URLSessionWebSocketTask.Message, Error>) -> Void) -> URLSessionWebSocketTask? {
         guard let url = url else {
             receiveHandler(.failure(NetworkError.badRequest))
             return nil
@@ -46,6 +64,8 @@ public extension WebsocketService {
         let task = session.webSocketTask(with: url)
         receive(task: task, receiveHandler: receiveHandler)
         task.resume()
+
+        taskStorage.setTask(task: task)
 
         return task
     }
@@ -67,12 +87,12 @@ public extension WebsocketService {
     }
 
     @discardableResult
-    func connect<T: Decodable>(
+    mutating func connect<T: Decodable>(
         decodingTo: T.Type,
         onDecode: @escaping (T) -> Void,
         onError: ((Error) -> Void)?
     ) -> URLSessionWebSocketTask? {
-        let task = connect { res in
+        let task = connect { [self] res in
             switch res {
                 case .success(let message):
                     switch message {
