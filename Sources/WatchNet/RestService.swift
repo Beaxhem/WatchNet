@@ -149,3 +149,6 @@ public extension RestService {
 
 }
 
+public protocol AnyEncodable: Encodable {
+
+}

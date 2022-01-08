@@ -14,11 +14,14 @@ public class RxTaskStorage: TaskStorage {
 
     public var task: URLSessionWebSocketTask?
 
-    public var message = BehaviorRelay<URLSessionWebSocketTask.Message?>(value: nil)
+    public var data = PublishRelay<Data>()
+    public var message = PublishRelay<URLSessionWebSocketTask.Message>()
 
     public var send: Observable<Void> {
-        message
-            .compactMap { $0 }
+        Observable.merge(
+            dataObservable,
+            message.asObservable()
+        )
             .flatMapLatest { [weak self] message -> Single<Void> in
                 guard let self = self,
                       let task = self.task else {
@@ -27,6 +30,12 @@ public class RxTaskStorage: TaskStorage {
 
                 return self.send(task: task, message: message)
             }
+    }
+
+    var dataObservable: Observable<URLSessionWebSocketTask.Message> {
+        data
+            .map { String(decoding: $0, as: UTF8.self) }
+            .map { .string($0) }
     }
 
     public init() { }
