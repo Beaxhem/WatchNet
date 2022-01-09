@@ -7,23 +7,9 @@
 
 import Foundation
 
-public protocol TaskStorage {
-    var task: URLSessionWebSocketTask? { get set }
-}
-
-public extension TaskStorage {
-
-    func send(message: URLSessionWebSocketTask.Message, completion: @escaping (Error?) -> Void) {
-        task?.send(message, completionHandler: completion)
-    }
-
-    mutating func setTask(task: URLSessionWebSocketTask?) {
-        self.task = task
-    }
-}
-
 public protocol WebsocketService {
     associatedtype Storage: TaskStorage
+    
     func path() -> String
 
     var taskStorage: Storage { get set }
@@ -64,6 +50,7 @@ public extension WebsocketService {
         let task = session.webSocketTask(with: url)
         receive(task: task, receiveHandler: receiveHandler)
         task.resume()
+
 
         taskStorage.setTask(task: task)
 

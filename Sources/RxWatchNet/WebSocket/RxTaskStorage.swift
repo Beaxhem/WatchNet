@@ -14,10 +14,17 @@ public class RxTaskStorage: TaskStorage {
 
     public var task: URLSessionWebSocketTask?
 
-    public var data = PublishRelay<Data>()
     public var message = PublishRelay<URLSessionWebSocketTask.Message>()
 
-    public var send: Observable<Void> {
+    private var data = PublishRelay<Data>()
+
+    public init() { }
+
+}
+
+public extension RxTaskStorage {
+
+    var send: Observable<Void> {
         Observable.merge(
             dataObservable,
             message.asObservable()
@@ -38,7 +45,9 @@ public class RxTaskStorage: TaskStorage {
             .map { .string($0) }
     }
 
-    public init() { }
+}
+
+extension RxTaskStorage {
 
     func send(task: URLSessionWebSocketTask, message: URLSessionWebSocketTask.Message) -> Single<Void> {
         Single.create { single in
@@ -50,14 +59,21 @@ public class RxTaskStorage: TaskStorage {
                 single(.failure(error))
             }
 
-            return Disposables.create {
-                task.cancel(with: .goingAway, reason: nil)
-            }
+            return Disposables.create()
         }
     }
 
+}
+
+public extension RxTaskStorage {
+
     func accept(message messageToSend: URLSessionWebSocketTask.Message) {
         message.accept(messageToSend)
+    }
+
+    func accept<T: Encodable>(_ object: T) {
+        guard let encodedObject = try? JSONEncoder().encode(object) else { return}
+        data.accept(encodedObject)
     }
 
 }
