@@ -64,3 +64,15 @@ public extension Reactive where Base: WebsocketService {
     }
 
 }
+
+extension WebsocketService where Storage == RxTaskStorage {
+
+    func send(message: URLSessionWebSocketTask.Message) {
+        taskStorage.accept(message: message)
+    }
+
+    func send<T: Encodable>(object: T) {
+        taskStorage.accept(object)
+    }
+
+}

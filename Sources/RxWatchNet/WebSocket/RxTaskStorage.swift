@@ -18,26 +18,29 @@ public class RxTaskStorage: TaskStorage {
 
     private var data = PublishRelay<Data>()
 
-    public init() { }
+    private var disposeBag: DisposeBag?
+
+    public init() {
+        disposeBag = .init {
+            Observable.merge(
+                dataObservable,
+                message.asObservable()
+            )
+                .flatMapLatest { [weak self] message -> Single<Void> in
+                    guard let self = self,
+                          let task = self.task else {
+                              return .never()
+                          }
+
+                    return self.send(task: task, message: message)
+                }
+                .subscribe()
+        }
+    }
 
 }
 
 public extension RxTaskStorage {
-
-    var send: Observable<Void> {
-        Observable.merge(
-            dataObservable,
-            message.asObservable()
-        )
-            .flatMapLatest { [weak self] message -> Single<Void> in
-                guard let self = self,
-                      let task = self.task else {
-                          return .never()
-                      }
-
-                return self.send(task: task, message: message)
-            }
-    }
 
     var dataObservable: Observable<URLSessionWebSocketTask.Message> {
         data
@@ -65,7 +68,7 @@ extension RxTaskStorage {
 
 }
 
-public extension RxTaskStorage {
+extension RxTaskStorage {
 
     func accept(message messageToSend: URLSessionWebSocketTask.Message) {
         message.accept(messageToSend)

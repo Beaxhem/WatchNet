@@ -11,7 +11,7 @@ public protocol TaskStorage {
     var task: URLSessionWebSocketTask? { get set }
 }
 
-public extension TaskStorage {
+extension TaskStorage {
 
     func send(message: URLSessionWebSocketTask.Message, completion: @escaping (Error?) -> Void) {
         task?.send(message, completionHandler: completion)

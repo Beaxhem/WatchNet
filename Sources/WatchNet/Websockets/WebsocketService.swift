@@ -30,6 +30,9 @@ private extension WebsocketService {
     }
 
     func receive(task: URLSessionWebSocketTask, receiveHandler: @escaping (Result<URLSessionWebSocketTask.Message, Error>) -> Void) {
+        guard task.state == .running || task.state == .suspended else {
+            return
+        }
         task.receive(completionHandler: { res in
             receiveHandler(res)
             receive(task: task, receiveHandler: receiveHandler)
@@ -67,6 +70,10 @@ public extension WebsocketService {
                 print("Error when sending PING \(error)")
             } else {
                 DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
+                    guard let task = task,
+                        task.state == .running else {
+                        return
+                    }
                     ping(task: task)
                 }
             }
@@ -107,3 +114,19 @@ public extension WebsocketService {
 
 }
 
+public extension WebsocketService {
+
+    func send(message: URLSessionWebSocketTask.Message, completion: @escaping (Error?) -> Void) {
+        taskStorage.send(message: message, completion: completion)
+    }
+
+    func send<T: Encodable>(object: T) {
+        guard let data = try? JSONEncoder().encode(object),
+              let message = String(data: data, encoding: .utf8) else {
+                  return
+              }
+
+        taskStorage.send(message: .string(message), completion: { _ in })
+    }
+
+}
