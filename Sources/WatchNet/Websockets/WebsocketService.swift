@@ -12,6 +12,8 @@ public protocol WebsocketService {
     
     func path() -> String
 
+	func setupRequest(_ request: inout URLRequest)
+
     var taskStorage: Storage { get set }
 }
 
@@ -21,6 +23,14 @@ private extension WebsocketService {
         .init(configuration: .default)
     }
 
+	var request: URLRequest? {
+		guard let url = url else { return nil }
+
+		var request = URLRequest(url: url)
+		setupRequest(&request)
+		return request
+	}
+
     var url: URL? {
         URL(string: path())
     }
@@ -28,6 +38,8 @@ private extension WebsocketService {
     var decoder: JSONDecoder {
         .init()
     }
+
+	func setupRequest(_ request: inout URLRequest) { }
 
     func receive(task: URLSessionWebSocketTask, receiveHandler: @escaping (Result<URLSessionWebSocketTask.Message, Error>) -> Void) {
         guard task.state == .running || task.state == .suspended else {
@@ -45,12 +57,12 @@ public extension WebsocketService {
 
     @discardableResult
     mutating func connect(receiveHandler: @escaping (Result<URLSessionWebSocketTask.Message, Error>) -> Void) -> URLSessionWebSocketTask? {
-        guard let url = url else {
+        guard let request = request else {
             receiveHandler(.failure(NetworkError.badRequest))
             return nil
         }
 
-        let task = session.webSocketTask(with: url)
+        let task = session.webSocketTask(with: request)
         receive(task: task, receiveHandler: receiveHandler)
         task.resume()
 

@@ -37,6 +37,15 @@ public extension RestService {
 
 }
 
+public extension RestService {
+
+	mutating func binding(_ binder: (Self) -> Void) -> Self {
+		binder(self)
+		return self
+	}
+
+}
+
 extension RestService {
 
     private func session(force: Bool) -> URLSession {
