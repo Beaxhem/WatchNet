@@ -8,7 +8,13 @@
 import Foundation
 
 public protocol WebsocketService {
+    associatedtype Storage: TaskStorage
+    
     func path() -> String
+
+	func setupRequest(_ request: inout URLRequest)
+
+    var taskStorage: Storage { get set }
 }
 
 private extension WebsocketService {
@@ -16,6 +22,14 @@ private extension WebsocketService {
     var session: URLSession {
         .init(configuration: .default)
     }
+
+	var request: URLRequest? {
+		guard let url = url else { return nil }
+
+		var request = URLRequest(url: url)
+		setupRequest(&request)
+		return request
+	}
 
     var url: URL? {
         URL(string: path())
@@ -25,7 +39,12 @@ private extension WebsocketService {
         .init()
     }
 
+	func setupRequest(_ request: inout URLRequest) { }
+
     func receive(task: URLSessionWebSocketTask, receiveHandler: @escaping (Result<URLSessionWebSocketTask.Message, Error>) -> Void) {
+        guard task.state == .running || task.state == .suspended else {
+            return
+        }
         task.receive(completionHandler: { res in
             receiveHandler(res)
             receive(task: task, receiveHandler: receiveHandler)
@@ -37,15 +56,18 @@ private extension WebsocketService {
 public extension WebsocketService {
 
     @discardableResult
-    func connect(receiveHandler: @escaping (Result<URLSessionWebSocketTask.Message, Error>) -> Void) -> URLSessionWebSocketTask? {
-        guard let url = url else {
+    mutating func connect(receiveHandler: @escaping (Result<URLSessionWebSocketTask.Message, Error>) -> Void) -> URLSessionWebSocketTask? {
+        guard let request = request else {
             receiveHandler(.failure(NetworkError.badRequest))
             return nil
         }
 
-        let task = session.webSocketTask(with: url)
+        let task = session.webSocketTask(with: request)
         receive(task: task, receiveHandler: receiveHandler)
         task.resume()
+
+
+        taskStorage.setTask(task: task)
 
         return task
     }
@@ -60,6 +82,10 @@ public extension WebsocketService {
                 print("Error when sending PING \(error)")
             } else {
                 DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
+                    guard let task = task,
+                        task.state == .running else {
+                        return
+                    }
                     ping(task: task)
                 }
             }
@@ -67,12 +93,12 @@ public extension WebsocketService {
     }
 
     @discardableResult
-    func connect<T: Decodable>(
+    mutating func connect<T: Decodable>(
         decodingTo: T.Type,
         onDecode: @escaping (T) -> Void,
         onError: ((Error) -> Void)?
     ) -> URLSessionWebSocketTask? {
-        let task = connect { res in
+        let task = connect { [self] res in
             switch res {
                 case .success(let message):
                     switch message {
@@ -100,3 +126,19 @@ public extension WebsocketService {
 
 }
 
+public extension WebsocketService {
+
+    func send(message: URLSessionWebSocketTask.Message, completion: @escaping (Error?) -> Void) {
+        taskStorage.send(message: message, completion: completion)
+    }
+
+    func send<T: Encodable>(object: T) {
+        guard let data = try? JSONEncoder().encode(object),
+              let message = String(data: data, encoding: .utf8) else {
+                  return
+              }
+
+        taskStorage.send(message: .string(message), completion: { _ in })
+    }
+
+}

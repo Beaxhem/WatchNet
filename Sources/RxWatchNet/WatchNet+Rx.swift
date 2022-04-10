@@ -12,9 +12,9 @@ import Foundation
 
 public extension Reactive where Base: RestService {
 
-    func fetch<T: Decodable>(decodingTo: T.Type) -> Single<T> {
+    func fetch<T: Decodable>(force: Bool = true, decodingTo: T.Type) -> Single<T> {
         Single.create { single in
-            let task = base.execute(decodingTo: T.self, force: true) { res in
+            let task = base.execute(decodingTo: T.self, force: force) { res in
                 switch res {
                     case .success(let obj):
                         single(.success(obj))
@@ -29,12 +29,12 @@ public extension Reactive where Base: RestService {
         }
     }
 
-    func fetch() -> Single<Void> {
+    func fetch() -> Single<Data> {
         Single.create { single in
             let task = base.execute { res in
                 switch res {
-                    case .success(_):
-                        single(.success(()))
+                    case .success(let data):
+                        single(.success(data))
                     case .failure(let error):
                         single(.failure(error))
                 }

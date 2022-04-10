@@ -17,6 +17,8 @@ public protocol RestService {
     func body() -> Data?
 
     func cacheable() -> Bool
+
+    func setupRequest(_ request: inout URLRequest)
 }
 
 public extension RestService {
@@ -29,14 +31,31 @@ public extension RestService {
         nil
     }
 
+    func setupRequest(_ request: inout URLRequest) {
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+    }
+
+}
+
+public extension RestService {
+
+	mutating func binding(_ binder: (Self) -> Void) -> Self {
+		binder(self)
+		return self
+	}
+
 }
 
 extension RestService {
 
-    private var session: URLSession {
+    private func session(force: Bool) -> URLSession {
         let configuration = URLSessionConfiguration.default
-        configuration.requestCachePolicy = cacheable() ? .returnCacheDataElseLoad : .reloadIgnoringLocalCacheData
+        configuration.requestCachePolicy = cacheable() && !force ? .returnCacheDataElseLoad : .reloadIgnoringLocalCacheData
         return URLSession(configuration: configuration)
+    }
+
+    var reachability: Reachability? {
+        try? .init()
     }
 
     var url: URL? {
@@ -70,8 +89,9 @@ extension RestService {
             request.httpBody = body
         }
 
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.addValue("application/json", forHTTPHeaderField: "Accept")
+
+        setupRequest(&request)
 
         return request
     }
@@ -90,14 +110,10 @@ public extension RestService {
             return nil
         }
 
-        let baseCachePolicy = session.configuration.requestCachePolicy
-        if force {
-            session.configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
-        }
+        let session = session(force: force)
 
         let start = DispatchTime.now()
         let task = session.dataTask(with: request) { data, response, error in
-            session.configuration.requestCachePolicy = baseCachePolicy
 
             guard let response = response,
                   error == nil else {
@@ -148,4 +164,3 @@ public extension RestService {
     }
 
 }
-
