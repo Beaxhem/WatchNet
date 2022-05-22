@@ -77,7 +77,7 @@ extension RestService {
         return "?\(parametersString)"
     }
 
-    var request: URLRequest? {
+    public var request: URLRequest? {
         guard let url = url else {
             return nil
         }
