@@ -17,6 +17,7 @@ public enum NetworkError: Error {
     case serverError
     case badData
     case unknownError(String)
+	case urlError(URLError)
 
     var string: String {
         switch self {
@@ -36,6 +37,8 @@ public enum NetworkError: Error {
                 return "Bad data"
             case .unknownError(let error):
                 return error
+			case .urlError(let error):
+				return error.localizedDescription
         }
     }
 

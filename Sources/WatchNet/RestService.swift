@@ -115,6 +115,12 @@ public extension RestService {
         let start = DispatchTime.now()
         let task = session.dataTask(with: request) { data, response, error in
 
+			if let error = error as? URLError {
+				log(.failure(.urlError(error)), startTime: start)
+				completion(.failure(.urlError(error)))
+				return
+			}
+
             guard let response = response,
                   error == nil else {
                       log(.failure(NetworkError.notFound), startTime: start)
