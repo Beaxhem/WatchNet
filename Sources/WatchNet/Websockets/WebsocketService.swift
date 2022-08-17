@@ -63,6 +63,7 @@ public extension WebsocketService {
         }
 
         let task = session.webSocketTask(with: request)
+		print("✅ [\(Date())] - Connected to \(url)")
         receive(task: task, receiveHandler: receiveHandler)
         task.resume()
 
