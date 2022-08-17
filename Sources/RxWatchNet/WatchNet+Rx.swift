@@ -12,7 +12,7 @@ import Foundation
 
 public extension Reactive where Base: RestService {
 
-    func fetch<T: Decodable>(force: Bool = true, decodingTo: T.Type) -> Single<T> {
+	func fetch<T: Decodable>(force: Bool = true, decodingTo: T.Type) -> Single<T> {
         Single.create { single in
             let task = base.execute(decodingTo: T.self, force: force) { res in
                 switch res {
@@ -27,11 +27,12 @@ public extension Reactive where Base: RestService {
                 task?.cancel()
             }
         }
+		.observe(on: ConcurrentDispatchQueueScheduler(qos: .background))
     }
 
-    func fetch() -> Single<Data> {
+	func fetch(force: Bool = true) -> Single<Data> {
         Single.create { single in
-            let task = base.execute { res in
+			let task = base.execute(force: force) { res in
                 switch res {
                     case .success(let data):
                         single(.success(data))
@@ -44,6 +45,7 @@ public extension Reactive where Base: RestService {
                 task?.cancel()
             }
         }
+		.observe(on: ConcurrentDispatchQueueScheduler(qos: .background))
     }
 
 }
