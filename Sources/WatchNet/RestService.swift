@@ -105,8 +105,9 @@ public extension RestService {
                  completion: @escaping (Result<Data, NetworkError>) -> Void
     ) -> URLSessionDataTask? {
         guard let request = request else {
-            log(.failure(NetworkError.badRequest), startTime: .now())
-            completion(.failure(.badRequest))
+			let error = NetworkError(error: .badRequest)
+			log(.failure(error), startTime: .now())
+            completion(.failure(error))
             return nil
         }
 
@@ -114,29 +115,31 @@ public extension RestService {
 
         let start = DispatchTime.now()
         let task = session.dataTask(with: request) { data, response, error in
+			func completeWith(error: NetworkError.Error) {
+				let error = NetworkError(error: error, responseData: data)
+				log(.failure(error), startTime: start)
+				URLCache.shared.removeCachedResponse(for: request)
+				completion(.failure(error))
+			}
 
 			if let error = error as? URLError {
-				log(.failure(.urlError(error)), startTime: start)
-				completion(.failure(.urlError(error)))
+				completeWith(error: .urlError(error))
 				return
 			}
 
             guard let response = response,
                   error == nil else {
-                      log(.failure(NetworkError.notFound), startTime: start)
-                      completion(.failure(.notFound))
-                      return
+				completeWith(error: .notFound)
+				return
             }
 
             if let errorFromStatusCode = mapError(by: response) {
-                log(.failure(errorFromStatusCode), startTime: start)
-                completion(.failure(errorFromStatusCode))
+				completeWith(error: errorFromStatusCode)
                 return
             }
 
             guard let data = data else {
-                log(.failure(NetworkError.badData), startTime: start)
-                completion(.failure(.badData))
+				completeWith(error: .badData("No data in the response"))
                 return
             }
 
@@ -158,8 +161,9 @@ public extension RestService {
                         let object = try JSONDecoder().decode(T.self, from: data)
                         completion(.success(object))
                     } catch {
-                        log(.failure(.badData))
-                        completion(.failure(.badData))
+						let error = NetworkError(error: .badData(error.localizedDescription))
+						log(.failure(error))
+						completion(.failure(error))
                     }
                 case .failure(let error):
                     completion(.failure(error))

@@ -20,53 +20,24 @@ public extension RestService {
                 message = "✅ [\(Date())] - \(method) \(url) \(statusCode) \(timeFrom(startTime: startTime))"
             case .failure(let error):
                 message = "🔴 [\(Date())] - \(method) \(url) \(error.string) \(timeFrom(startTime: startTime))"
+				if let data = error.responseData,
+				   let dataString = String(data: data, encoding: .utf8) {
+					message += "\n\(dataString)"
+				}
         }
 
         log(message: message)
-    }
-
-    private func log(message: String) {
-        #if DEBUG
-        print(message)
-        #endif
-    }
-
-    func log(response: URLResponse, startTime: DispatchTime? = nil) {
-        #if DEBUG
-        let success = mapError(by: response) == nil
-        let message = messageFrom(response: response)
-        log(success: success, message: message, separator: " ")
-
-        #endif
-    }
-
-    func log(success: Bool, message: String? = nil, separator: String = ", ") {
-        #if DEBUG
-
-        let method = method().rawValue
-
-        let icon = getIconIf(success: success)
-        let date = Date()
-        let _message = message != nil ? message! + separator : ""
-        let url = url?.absoluteString ?? path()
-
-        print("\(icon) [\(date)] - \(method) \(url) \(_message)")
-
-        #endif
     }
 
 }
 
 private extension RestService {
 
-    func messageFrom(response: URLResponse, startTime: DispatchTime? = nil) -> String {
-        let statusCode = (response as! HTTPURLResponse).statusCode
-        return "\(statusCode) \(timeFrom(startTime: startTime))"
-    }
-
-    func getIconIf(success: Bool) -> String {
-        success ? "✅" : "🔴"
-    }
+	func log(message: String) {
+#if DEBUG
+		print(message)
+#endif
+	}
 
     func timeFrom(startTime: DispatchTime?) -> String {
         guard let startTime = startTime else { return "" }

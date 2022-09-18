@@ -7,46 +7,63 @@
 
 import Foundation
 
-public enum NetworkError: Error {
-    
-    case notFound
-    case unauthorized
-    case badRequest
-    case noAccess
-    case wrongMethod
-    case serverError
-    case badData
-    case unknownError(String)
-	case urlError(URLError)
+public struct NetworkError: Error {
 
-    var string: String {
-        switch self {
-            case .notFound:
-                return "Not found"
-            case .unauthorized:
-                return "Unauthorized"
-            case .badRequest:
-                return "Bad request"
-            case .noAccess:
-                return "No access"
-            case .wrongMethod:
-                return "Wrong method"
-            case .serverError:
-                return "Internal error"
-            case .badData:
-                return "Bad data"
-            case .unknownError(let error):
-                return error
-			case .urlError(let error):
-				return error.localizedDescription
-        }
-    }
+	public var string: String {
+		error.string
+	}
+
+	public var error: Self.Error
+
+	public var responseData: Data? = nil
 
 }
 
+extension NetworkError {
+
+	public enum Error {
+
+		case notFound
+		case unauthorized
+		case badRequest
+		case noAccess
+		case wrongMethod
+		case serverError
+		case badData(String)
+		case unknownError(String)
+		case urlError(URLError)
+
+		var string: String {
+			switch self {
+				case .notFound:
+					return "Not found"
+				case .unauthorized:
+					return "Unauthorized"
+				case .badRequest:
+					return "Bad request"
+				case .noAccess:
+					return "No access"
+				case .wrongMethod:
+					return "Wrong method"
+				case .serverError:
+					return "Internal error"
+				case .badData(let errorString):
+					return "Bad data\n\(errorString)"
+				case .unknownError(let error):
+					return error
+				case .urlError(let error):
+					return error.localizedDescription
+			}
+		}
+
+	}
+}
+
+
+
 extension RestService {
 
-    func mapError(by response: URLResponse) -> NetworkError? {
+	func mapError(by response: URLResponse) -> NetworkError.Error? {
         let res = response as! HTTPURLResponse
 
         switch res.statusCode {
@@ -68,5 +85,5 @@ extension RestService {
         }
 
     }
-    
+
 }

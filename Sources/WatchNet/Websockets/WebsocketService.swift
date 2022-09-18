@@ -58,12 +58,12 @@ public extension WebsocketService {
     @discardableResult
     mutating func connect(receiveHandler: @escaping (Result<URLSessionWebSocketTask.Message, Error>) -> Void) -> URLSessionWebSocketTask? {
         guard let request = request else {
-            receiveHandler(.failure(NetworkError.badRequest))
+			receiveHandler(.failure(NetworkError(error: .badRequest)))
             return nil
         }
 
         let task = session.webSocketTask(with: request)
-		print("✅ [\(Date())] - Connected to \(url)")
+		print("✅ [\(Date())] - Connected to \(request.description)")
         receive(task: task, receiveHandler: receiveHandler)
         task.resume()
 
@@ -104,7 +104,8 @@ public extension WebsocketService {
                 case .success(let message):
                     switch message {
                         case .data(_):
-                            onError?(NetworkError.badData)
+							let error = NetworkError(error: .badData("Data response from websocket is not supported"))
+							onError?(error)
                         case .string(let string):
                             let data = Data(string.utf8)
                             do {
