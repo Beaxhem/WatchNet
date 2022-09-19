@@ -18,7 +18,23 @@ import Cocoa
 public typealias UIImage = NSImage
 #endif
 
+
+public struct ImageRequestError: Error {
+	public var error: NetworkError.Error
+}
+
+extension ImageRequestError: NetworkErrorDerivable {
+
+	public init(error: NetworkError) {
+		self.error = error.error
+	}
+
+}
+
+
 public class ImageService: RestService {
+
+	public typealias ErrorResponse = ImageRequestError
 
     public static let shared = ImageService()
 
@@ -45,7 +61,7 @@ public class ImageService: RestService {
 public extension ImageService {
 
     @discardableResult
-    func image(for path: String, force: Bool = false, completion: @escaping (Result<UIImage, NetworkError>) -> Void) -> URLSessionDataTask? {
+    func image(for path: String, force: Bool = false, completion: @escaping (Result<UIImage, Error>) -> Void) -> URLSessionDataTask? {
         self._path = path
 
         let task = execute(force: force) { res in
@@ -53,12 +69,13 @@ public extension ImageService {
                 case .failure(let error):
                     completion(.failure(error))
                 case .success(let data):
-                    if let image = UIImage(data: data) {
-                        completion(.success(image))
-                        return
-                    }
+					guard let image = UIImage(data: data) else {
+						let error = NetworkError(error: .badData("Data is not an image"))
+						completion(.failure(error))
+						return
+					}
 
-                    completion(.failure(.badData))
+					completion(.success(image))
             }
         }
 

@@ -87,3 +87,9 @@ extension RestService {
     }
 
 }
+
+public protocol NetworkErrorDerivable: Error {
+	var error: NetworkError.Error { get }
+
+	init(error: NetworkError)
+}

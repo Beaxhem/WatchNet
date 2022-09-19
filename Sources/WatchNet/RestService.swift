@@ -8,6 +8,9 @@
 import Foundation
 
 public protocol RestService {
+
+	associatedtype ErrorResponse: NetworkErrorDerivable
+
     func method() -> HTTPMethod
 
     func path() -> String
@@ -102,12 +105,20 @@ public extension RestService {
 
     @discardableResult
     func execute(force: Bool = true,
-                 completion: @escaping (Result<Data, NetworkError>) -> Void
+				 completion: @escaping (Result<Data, ErrorResponse>) -> Void
     ) -> URLSessionDataTask? {
+		func complete(_ result: Result<Data, NetworkError>) {
+			switch result {
+				case .failure(let error):
+					completion(.failure(.init(error:error)))
+				case .success(let data):
+					completion(.success(data))
+			}
+		}
         guard let request = request else {
 			let error = NetworkError(error: .badRequest)
 			log(.failure(error), startTime: .now())
-            completion(.failure(error))
+			complete(.failure(error))
             return nil
         }
 
@@ -119,7 +130,7 @@ public extension RestService {
 				let error = NetworkError(error: error, responseData: data)
 				log(.failure(error), startTime: start)
 				URLCache.shared.removeCachedResponse(for: request)
-				completion(.failure(error))
+				complete(.failure(error))
 			}
 
 			if let error = error as? URLError {
@@ -153,7 +164,12 @@ public extension RestService {
     }
 
     @discardableResult
-    func execute<T: Decodable>(decodingTo: T.Type, force: Bool = true, completion: @escaping (Result<T, NetworkError>) -> Void) -> URLSessionDataTask? {
+    func execute<T: Decodable>(decodingTo: T.Type, force: Bool = true, completion: @escaping (Result<T, ErrorResponse>) -> Void) -> URLSessionDataTask? {
+		func completeWith(error: NetworkError.Error) {
+			let error = NetworkError(error: error)
+			log(.failure(error))
+			completion(.failure(.init(error: error)))
+		}
         let task = execute(force: force) { res in
             switch res {
                 case .success(let data):
@@ -161,9 +177,7 @@ public extension RestService {
                         let object = try JSONDecoder().decode(T.self, from: data)
                         completion(.success(object))
                     } catch {
-						let error = NetworkError(error: .badData(error.localizedDescription))
-						log(.failure(error))
-						completion(.failure(error))
+						completeWith(error: .badData(error.localizedDescription))
                     }
                 case .failure(let error):
                     completion(.failure(error))

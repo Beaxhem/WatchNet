@@ -69,3 +69,53 @@ public extension Reactive where Base: ImageService {
     }
 
 }
+
+public extension Reactive where Base: RestService {
+
+	func fetch<T: Decodable>(force: Bool = true, decodingTo: T.Type, errorHandler: @escaping (Base.ErrorResponse) -> Void) -> Single<T> {
+		fetch(force: force, decodingTo: decodingTo)
+			.catch { error in
+				if let error = error as? Base.ErrorResponse {
+					errorHandler(error)
+				}
+				return .error(error)
+			}
+	}
+
+	func fetch(force: Bool = true, errorHandler: @escaping (Base.ErrorResponse) -> Void) -> Single<Data> {
+		fetch(force: force)
+			.catch { error in
+				if let error = error as? Base.ErrorResponse {
+					errorHandler(error)
+				}
+				return .error(error)
+			}
+	}
+
+}
+
+public extension ObservableType {
+
+	func `catch`<T: Error>(error: T.Type, handler: @escaping (T) -> Void) -> Observable<Self.Element> {
+		self.catch { e in
+			if let error = e as? T {
+				handler(error)
+				return .error(e)
+			}
+			return .error(e)
+		}
+	}
+
+}
+
+public extension ObservableType {
+
+	func `catch`<E: Error, T>(error: E.Type, handler: @escaping (E) -> Void) -> Observable<Self.Element> where Element == Event<T> {
+		self.do(onNext: { e in
+			if let error = e.error as? E {
+				handler(error)
+			}
+		})
+	}
+
+}
