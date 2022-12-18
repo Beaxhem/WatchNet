@@ -183,4 +183,26 @@ public extension RestService {
         return task
     }
 
+	func fetch<T: Decodable>(decodingTo: T.Type, force: Bool = true) async throws -> T {
+		func completeWith(error: NetworkError.Error) -> NetworkError {
+			let error = NetworkError(error: error)
+			log(.failure(error))
+			return error
+		}
+
+		guard let request else {
+			throw completeWith(error: .badRequest)
+		}
+
+		do {
+			let (data, res) = try await session(force: force).data(for: request)
+			let object = try JSONDecoder().decode(T.self, from: data)
+			log(.success(res))
+			return object
+		} catch {
+			print("NETWORK ERROR:", error)
+			throw error
+		}
+	}
+
 }
