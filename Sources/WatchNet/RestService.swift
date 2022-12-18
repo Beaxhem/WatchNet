@@ -57,10 +57,6 @@ extension RestService {
         return URLSession(configuration: configuration)
     }
 
-    var reachability: Reachability? {
-        try? .init()
-    }
-
     var url: URL? {
         return URL(string: path() + parametersString)
     }

@@ -71,7 +71,7 @@ final class CommentsService: RestService {
     }
 }
 
-class BadURLService: RestService {
+final class BadURLService: RestService {
 
     struct Todo: Codable {
 
